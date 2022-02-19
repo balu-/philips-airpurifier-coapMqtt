@@ -1,0 +1,7 @@
+{
+    "mqttAddress": "192.168.100.1",
+    "mqttPort": 1883,
+    "username": "coapMqttUser",
+    "password": "coapMqttPassword",
+    "mqttPrefix": "coap2mqtt/"
+}

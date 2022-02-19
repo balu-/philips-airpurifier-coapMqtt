@@ -1,0 +1,18 @@
+{
+    "publishParamsList": [
+                     {"coapKey":"ConnectType", "mqttKey":"status"},
+                     {"coapKey":"pm25", "mqttKey":"sensor/pm25/state", "updateOnlyIfDifferenceIsMoreThen":1},
+                     {"coapKey":"tvoc", "mqttKey":"sensor/tvoc/state"},
+                     {"coapKey":"iaql", "mqttKey":"sensor/allergene/state"},
+                     {"coapKey":"aqil", "mqttKey":"sensor/brightness/state"},
+                     {"coapKey":"fltsts0", "mqttKey":"filter/prefilterclean"},
+                     {"coapKey":"fltsts1", "mqttKey":"filter/hepafilterreplace"},
+                     {"coapKey":"fltsts2", "mqttKey":"filter/activecarbonfilterreplace"},
+                     {"coapKey":"mode", "mqttKey":"mode", "mqttControll": true},
+                     {"coapKey":"om", "mqttKey":"fanspeed", "mqttControll": true},
+                     {"coapKey":"pwr", "mqttKey":"power", "mqttControll": true},
+                     {"coapKey":"uil", "mqttKey":"buttonlight"}
+                    ],
+    "mqttSensorPrefix": "philips-airpurifier",
+    "coapHost": "10.0.0.1"
+}

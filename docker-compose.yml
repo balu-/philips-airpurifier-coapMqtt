@@ -1,0 +1,11 @@
+---
+version: "2.1"
+services:
+  coapmqtt:
+    image: coapmqtt:latest
+    container_name: coapmqtt
+    environment:
+      - TZ=Europe/Berlin
+    volumes:
+      - ./settings:/app/settings
+    restart: unless-stopped
