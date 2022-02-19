@@ -6,6 +6,12 @@ and beeing able to log them. Further more I wanted to controll the airpurifier v
 
 This scripts / This docker-container creates a bridge between coap (the protocol used by the purifier) and mqtt. It is push based and doesn't poll values, so propagation should be near instantanious.
 
+## How to run
+
+Setup your Airpurifier to use your wifi and find its IP-Adress.
+After that adapt the settings in `coapconfig.json` and `mqttconfig.json`,
+build the docker-container, and run it (either using docker-compse, or docker. If you use docker you need to mount the settings folder to `/app/settings`).
+
 ## Settings
 
 The settings are stored in the `settings` folder.
