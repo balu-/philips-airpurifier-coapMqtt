@@ -57,6 +57,29 @@ This is the main config file, it sets the ip of the airpurifier (`coapHost`) and
 }
 ```
 
+### Exposed Mqtt structure
+
+- philips-airpurifier
+	- sensor
+		- pm25
+			- state = <value | number>
+		- tvoc
+			- state = <value | number>
+		- allergene
+		    - state = <value | number>
+		- brightness
+			- state = <value | number>
+	- status = <value | string Online>
+	- filter
+		- prefilterclean = <value | hours>
+		- hepafilterreplace = <value | hours>
+		- activecarbonfilterreplace = <value | hours>
+	- mode = <value | AG | S | T ...>
+	- fanspeed = <value | s | 1 | 2 | 3 ...>
+	- power = <value | 1 | 0 >
+	- buttonlight = <value>
+
+
 
 ### Tested Devices
  - Philips AC3033
