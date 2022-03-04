@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import os
+import traceback
 import asyncio
 from aioairctrl import CoAPClient # "aioairctrl @ git+https://github.com/betaboon/aioairctrl@v0.2.1"
 import datetime
@@ -72,7 +73,7 @@ async def main():
 	#prepare upload consumer
 	pT = mqttPublishThread(q, name='mqttPublishThread')
 	pT.start()
-	
+	logger.info(f"Start COAP - {coapHost}")
 	client = await CoAPClient.create(host=coapHost)
 	logger.info("First GETTING STATUS")
 
@@ -88,14 +89,15 @@ async def main():
 	try:
 		logger.info("observe")
 		canceled = False
+		timeout_count = 0
 		while not canceled:
 			try:
 				logger.info("start observe")
-				async for res in client.observe_status():
+				async for res in client.observe_status(inital_timeout=180 + (timeout_count*60)):
+					timeout_count = 0
 					#for res in status:
 					now = datetime.datetime.now()
-					counter += 1
-					logger.info(f"Got State {now} - {counter}")
+					logger.info(f"Got State {now}")
 					logger.debug(res)
 
 					for d in publishParamsList:
@@ -114,12 +116,18 @@ async def main():
 					        state[d['mqttKey']] = value
 					#await asyncio.sleep(10)
 				logger.info("Restarting observe")
+				if timeout_count <= 10:
+					timeout_count += 1
+				else:
+					logger.warning(f"Timeout excess {timeout_count}")
+					
 			except asyncio.CancelledError as e:
 				logger.info("Async io cancelled")
 	except (KeyboardInterrupt):
 		logger.info("Keyboard interrupt")
 	except Exception as e:
 		logger.error("Exception")
+		logger.error(traceback.format_exc())
 		logger.error(e)
 	finally:
 		logger.info("Shutting down")
