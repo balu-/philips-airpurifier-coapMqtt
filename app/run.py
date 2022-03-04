@@ -3,7 +3,7 @@ import json
 import os
 import asyncio
 from aioairctrl import CoAPClient # "aioairctrl @ git+https://github.com/betaboon/aioairctrl@v0.2.1"
-
+import datetime
 from mqttPublishThread import mqttPublishThread
 import queue
 BUF_SIZE = 100
@@ -11,8 +11,6 @@ q = queue.Queue(BUF_SIZE)
 
 import logging
 logger = logging.getLogger(__name__)
-
-## 10.3.0.193
 
 #global state of airfilter
 state={}
@@ -77,7 +75,6 @@ async def main():
 	
 	client = await CoAPClient.create(host=coapHost)
 	logger.info("First GETTING STATUS")
-	status = await client.get_status()
 
 	#Subscribe to all mqtt topics 
 	#where in publishParamsList mqttControll is True
@@ -89,32 +86,48 @@ async def main():
 
 	
 	try:
-		async for res in client.observe_status():
-		    #for res in status:
-			logger.info("Got State")
-			logger.debug(res)
+		logger.info("observe")
+		canceled = False
+		while not canceled:
+			try:
+				logger.info("start observe")
+				async for res in client.observe_status():
+					#for res in status:
+					now = datetime.datetime.now()
+					counter += 1
+					logger.info(f"Got State {now} - {counter}")
+					logger.debug(res)
 
-			for d in publishParamsList:
-			    value = res[d['coapKey']]
-			    #check values
-			    if state.get(d['mqttKey']) is None or state.get(d['mqttKey']) != value:
-			        if type(value) == int and state.get(d['mqttKey']) is not None and \
-			        	'updateOnlyIfDifferenceIsMoreThen' in d and type(d['updateOnlyIfDifferenceIsMoreThen']) == int and \
-			        	(state.get(d['mqttKey']) - d['updateOnlyIfDifferenceIsMoreThen']) <= value <= (state.get(d['mqttKey'])+ d['updateOnlyIfDifferenceIsMoreThen']):
-			        		#ignore if +-1
-			        		logger.info(f"Value in updateOnlyIfDifferenceIsMoreThen {d['mqttKey']}")
-			        		continue
+					for d in publishParamsList:
+					    value = res[d['coapKey']]
+					    #check values
+					    if state.get(d['mqttKey']) is None or state.get(d['mqttKey']) != value:
+					        if type(value) == int and state.get(d['mqttKey']) is not None and \
+					        	'updateOnlyIfDifferenceIsMoreThen' in d and type(d['updateOnlyIfDifferenceIsMoreThen']) == int and \
+					        	(state.get(d['mqttKey']) - d['updateOnlyIfDifferenceIsMoreThen']) <= value <= (state.get(d['mqttKey'])+ d['updateOnlyIfDifferenceIsMoreThen']):
+					        		#ignore if +-1
+					        		logger.info(f"Value in updateOnlyIfDifferenceIsMoreThen {d['mqttKey']}")
+					        		continue
 
-			        logger.info(f"Publish {mqttSensorPrefix}/{d['mqttKey']} => {value}")
-			        q.put({'topic': mqttSensorPrefix+'/'+d['mqttKey'], 'payload':value })
-			        state[d['mqttKey']] = value
-			#await asyncio.sleep(10)
-	except (KeyboardInterrupt, asyncio.CancelledError):
-	    pass
+					        logger.info(f"Publish {mqttSensorPrefix}/{d['mqttKey']} => {value}")
+					        q.put({'topic': mqttSensorPrefix+'/'+d['mqttKey'], 'payload':value })
+					        state[d['mqttKey']] = value
+					#await asyncio.sleep(10)
+				logger.info("Restarting observe")
+			except asyncio.CancelledError as e:
+				logger.info("Async io cancelled")
+	except (KeyboardInterrupt):
+		logger.info("Keyboard interrupt")
+	except Exception as e:
+		logger.error("Exception")
+		logger.error(e)
 	finally:
-	    if client:
-	        await client.shutdown()
-	    pT.join() # wait for thread (infinity)
+		logger.info("Shutting down")
+		if client:
+			logger.info("Waiting for client")
+			await client.shutdown()
+		logger.info("Waiting for mqtt thread")
+		pT.join() # wait for thread (infinity)
 
 
 if __name__ == "__main__":

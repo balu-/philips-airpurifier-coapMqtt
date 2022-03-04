@@ -5,7 +5,8 @@ name = "pypi"
 
 [packages]
 paho-mqtt = "*"
-aioairctrl = {ref = "v0.2.1", git = "https://github.com/betaboon/aioairctrl"}
+aioairctrl = {ref = "timeout", git = "https://github.com/balu-/aioairctrl"}
+
 
 [dev-packages]
 
